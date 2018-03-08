@@ -36,7 +36,7 @@ def consume():
   
 def produce():
   time.sleep(0.7)
-  if len(producLine) < 100:
+  if len(producLine) < maxLength:
     producLine.append('product')
     print ('Produce', len(producLine))
   print ('Producer wait')
