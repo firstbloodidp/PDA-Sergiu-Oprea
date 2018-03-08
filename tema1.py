@@ -19,9 +19,9 @@ class myThread (threading.Thread):
 				# Get lock to synchronize threads
 				threadLock.acquire()
 				if self.name == 'Producer':
-					consume()
-				else:
 					produce()
+				else:
+					consume()
 				# Free lock to release next thread
 				threadLock.release()
 		except KeyboardInterrupt:
