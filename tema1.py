@@ -6,54 +6,60 @@ import time
 producLine = []
 maxLength = 100
 
+class producerClass(threading.Thread):
+    def __init__(self, threadID, name, counter):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.counter = counter
 
-class myThread(threading.Thread):
-	def __init__(self, threadID, name, counter):
-		threading.Thread.__init__(self)
-		self.threadID = threadID
-		self.name = name
-		self.counter = counter
+    def run(self):
+        print("Starting " + self.name)
+        try:
+            while True:
+                time.sleep(0.7)
+                semaforFull.acquire()
+                print("Product")
+                threadLock.acquire()
+                producLine.append('product')
+                # Free lock to release next thread
+                threadLock.release()
+                semaforEmpty.release()
+        except KeyboardInterrupt:
+            threadLock.release()
 
-	def run(self):
-		print("Starting " + self.name)
-		try:
-			while True:
-				# Get lock to synchronize threads
-				threadLock.acquire()
-				if self.name == 'Producer':
-					produce()
-				else:
-					consume()
-				# Free lock to release next thread
-				threadLock.release()
-		except KeyboardInterrupt:
-			threadLock.release()
+class consumerClass(threading.Thread):
+    def __init__(self, threadID, name, counter):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.counter = counter
 
-
-def consume():
-	time.sleep(0.5)
-	if len(producLine) > 0:
-		print('Consume', len(producLine))
-		del producLine[len(producLine) - 1]
-	else:
-		print('Consumer wait')
-
-
-def produce():
-	time.sleep(0.7)
-	if len(producLine) < maxLength:
-		producLine.append('product')
-		print('Produce', len(producLine))
-	else:
-		print('Producer wait')
-
+    def run(self):
+        print("Starting " + self.name)
+        try:
+            while True:
+                # Get lock to synchronize threads
+                semaforEmpty.acquire()
+                print("Consume")
+                threadLock.acquire()
+                del producLine[len(producLine) - 1]
+                # Free lock to release next thread
+                threadLock.release()
+                semaforFull.release()
+                time.sleep(0.5)
+        except KeyboardInterrupt:
+            threadLock.release()
 
 threadLock = threading.Lock()
 threads = []
 
+semaforFull = threading.Semaphore(value=maxLength)
+semaforEmpty = threading.Semaphore(value=0)
+
 # Create new threads
-producer = myThread(1, "Producer", 1)
-consumer = myThread(2, "Consumer", 2)
+producer = producerClass(1, "Producer", 1)
+consumer = consumerClass(2, "Consumer", 2)
 
 # Start new Threads
 producer.start()
@@ -65,5 +71,5 @@ threads.append(consumer)
 
 # Wait for all threads to complete
 for t in threads:
-	t.join()
+    t.join()
 print("Exiting Main Thread")
