@@ -6,14 +6,16 @@ import time
 producLine = []
 maxLength = 100
 
-class myThread (threading.Thread):
+
+class myThread(threading.Thread):
 	def __init__(self, threadID, name, counter):
 		threading.Thread.__init__(self)
 		self.threadID = threadID
 		self.name = name
 		self.counter = counter
+
 	def run(self):
-		print ("Starting " + self.name)
+		print("Starting " + self.name)
 		try:
 			while True:
 				# Get lock to synchronize threads
@@ -26,23 +28,26 @@ class myThread (threading.Thread):
 				threadLock.release()
 		except KeyboardInterrupt:
 			threadLock.release()
-		
+
+
 def consume():
 	time.sleep(0.5)
 	if len(producLine) > 0:
-		print ('Consume', len(producLine))
+		print('Consume', len(producLine))
 		del producLine[len(producLine) - 1]
 	else:
-		print ('Consumer wait')
+		print('Consumer wait')
+
 
 def produce():
 	time.sleep(0.7)
 	if len(producLine) < maxLength:
 		producLine.append('product')
-		print ('Produce', len(producLine))
+		print('Produce', len(producLine))
 	else:
-		print ('Producer wait')
-		
+		print('Producer wait')
+
+
 threadLock = threading.Lock()
 threads = []
 
@@ -61,4 +66,4 @@ threads.append(consumer)
 # Wait for all threads to complete
 for t in threads:
 	t.join()
-print ("Exiting Main Thread")
+print("Exiting Main Thread")
