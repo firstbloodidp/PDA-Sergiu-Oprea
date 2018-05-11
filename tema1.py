@@ -1,14 +1,17 @@
 #!/usr/bin/python3
 
-import threading
+from threading import Thread, Condition
 import time
+import random
 
 producLine = []
 maxLength = 100
+condition = Condition()
+global verify 
 
-class producerClass(threading.Thread):
+class producerClass(Thread):
     def __init__(self, threadID, name, counter):
-        threading.Thread.__init__(self)
+        Thread.__init__(self)
         self.threadID = threadID
         self.name = name
         self.counter = counter
@@ -18,19 +21,22 @@ class producerClass(threading.Thread):
         try:
             while True:
                 time.sleep(0.7)
-                semaforFull.acquire()
+                #semaforFull.acquire()
                 print("Product")
-                threadLock.acquire()
+                condition.acquire()
+                while len(producLine) == maxLength:
+                    condition.wait()
                 producLine.append('product')
                 # Free lock to release next thread
-                threadLock.release()
-                semaforEmpty.release()
+                condition.release()
+                condition.notify_all()
+                #semaforEmpty.release()
         except KeyboardInterrupt:
-            threadLock.release()
+            condition.release()
 
-class consumerClass(threading.Thread):
+class consumerClass(Thread):
     def __init__(self, threadID, name, counter):
-        threading.Thread.__init__(self)
+        Thread.__init__(self)
         self.threadID = threadID
         self.name = name
         self.counter = counter
@@ -40,22 +46,24 @@ class consumerClass(threading.Thread):
         try:
             while True:
                 # Get lock to synchronize threads
-                semaforEmpty.acquire()
+                #semaforEmpty.acquire()
                 print("Consume")
-                threadLock.acquire()
+                condition.acquire()
+                while len(producLine) == 0:
+                    condition.wait()
                 del producLine[len(producLine) - 1]
                 # Free lock to release next thread
-                threadLock.release()
-                semaforFull.release()
+                condition.release()
+                condition.notify_all()
+                #semaforFull.release()
                 time.sleep(0.5)
         except KeyboardInterrupt:
-            threadLock.release()
+            condition.release()
 
-threadLock = threading.Lock()
 threads = []
 
-semaforFull = threading.Semaphore(value=maxLength)
-semaforEmpty = threading.Semaphore(value=0)
+#semaforFull = threading.Semaphore(value=maxLength)
+#semaforEmpty = threading.Semaphore(value=0)
 
 # Create new threads
 producer = producerClass(1, "Producer", 1)
