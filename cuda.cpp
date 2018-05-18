@@ -46,6 +46,13 @@ int main()
 	int numOfBlocks = 1;
 
 	dim3 threadsPerBlock(4, 4);
+	
+	size_t size = NumbeOfTasks * sizeof(float);
+	
+	int* d_A;
+    	cudaMalloc(&d_A, size);
+	
+	cudaMemcpy(d_A, *dst, size, cudaMemcpyHostToDevice);
 
 	for (int k = 0; k < NumbeOfTasks k++)
 		MatAdd << numOfBlocks threadsPerBlock >> >(dst);
