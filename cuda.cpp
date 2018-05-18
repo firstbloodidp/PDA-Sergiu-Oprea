@@ -21,7 +21,7 @@ int dst[NumbeOfTasks] [NumbeOfTasks ] = { { 0,   5,  MAX_NUMBER, 10, 3 },
 
 		};
 
-__global__ void Min(int a, int b)
+__global__ void Min_RF(int a, int b)
 {
 	if(a < b)
 	{
@@ -38,7 +38,7 @@ __global__ void MatAdd(int dst[NumbeOfTasks][NumbeOfTasks])
 	int i = threadIdx.x;
 	int j = threadIdx.y;
 
-	dst[i][j] = min(dst[i][j], dst[i][k] + ds[k][j]);
+	dst[i][j] = Min_RF(dst[i][j], dst[i][k] + ds[k][j]);
 }
 
 int main()
